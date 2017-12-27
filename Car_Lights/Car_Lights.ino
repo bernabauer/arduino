@@ -1,22 +1,21 @@
-#include <mcp_can.h>
 #include <SPI.h>
 
-const int clicker = 10; //analog output
-const int frontRight = 9; //analog output
-const int lowBeamOut = 8;
-const int parkingOut = 7;
-const int rearRight = 6; //analog output
-const int rearLeft = 5; //analog output
-const int highBeamOut = 4;
-const int frontLeft = 3; //analog output
+const int clicker     = 10; //analog output
+const int frontRight  = 9;  //analog output
+const int lowBeamOut  = 8;  //output
+const int parkingOut  = 7;  //output
+const int rearRight   = 6;  //analog output
+const int rearLeft    = 5;  //analog output
+const int highBeamOut = 4;  //output
+const int frontLeft   = 3;  //analog output
 
-const int turnSignalSwitch = A0;
-const int headlightSwitch = A1;
-const int brakeIn = A2;
+const int turnSignalSwitch  = A0; //analot input
+const int headlightSwitch   = A1; //analog input
+const int brakeIn           = A2; //analog input
 
-const int brightness = 30; //sets brightness of Parking Lights, 
+const int brightness = 30;      //sets brightness of Parking Lights, 
 const int signalInterval = 700; //Turn signal interval in milliseconds, SAE states 90 times a second (700ms)
-const int hazardInterval = 300;
+const int hazardInterval = 300; //hazards interval in milliseconds are faster than turn signal
 
 int leftState = HIGH;
 int rightState = HIGH;
@@ -28,8 +27,6 @@ int highBeamState = HIGH;
 int parkingBrightness = 0;
 
 unsigned long previousMillis = 0;
-
-MCP_CAN CAN(10); // Set CS to pin 10
 
 void setup() {
 
@@ -44,19 +41,6 @@ void setup() {
   pinMode(rearRight, OUTPUT);
   pinMode(rearLeft, OUTPUT);
 
-START_INIT:
-
-    if(CAN_OK == CAN.begin(CAN_500KBPS))                   // init can bus : baudrate = 500k
-    {
-        Serial.println("CAN BUS Shield init ok!");
-    }
-    else
-    {
-        Serial.println("CAN BUS Shield init fail");
-        Serial.println("Init CAN BUS Shield again");
-        delay(100);
-        goto START_INIT;
-    }  
 }
 
 void loop() {
@@ -66,25 +50,18 @@ void loop() {
   headlight();
   if (hazardSwi < 250) { //splits turn signal and hazard commands, hazard over ride
     hazard();
-  }
-  else {
+  } else {
     turn();
   }
   Serial.print(" Left: ");
-  Serial.print(leftState);
+  Serial.println(leftState);
   Serial.print(" Right: ");
-  Serial.print(rightState);
+  Serial.println(rightState);
   Serial.print(" Brakes: ");
-  Serial.print(brakeState);
+  Serial.println(brakeState);
   Serial.print(" High Beam: ");
-  Serial.print(highBeamState);
+  Serial.println(highBeamState);
   Serial.print(" "); 
-  
-  //unsigned char msg2[8] = {lightValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  unsigned char msg[4] = {leftState, rightState, brakeState, highBeamState};
-  // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
-  CAN.sendMsgBuf(0x01, 0, 4, msg);
-  delay(20); 
 
 }
 
